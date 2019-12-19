@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import {Toolbar} from '@material-ui/core';
+import { Toolbar } from '@material-ui/core';
 
 const Container = styled(Toolbar)`
   background-color: var(--primary-bg);
@@ -9,8 +9,6 @@ const Container = styled(Toolbar)`
   line-height: 40px;
 `;
 
-const ChatsNavbar = () => (
-  <Container>Whatsapp Clone</Container>
-);
+const ChatsNavbar = () => <Container>Whatsapp Clone</Container>;
 
 export default ChatsNavbar;

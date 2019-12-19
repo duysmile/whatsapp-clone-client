@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { List, ListItem } from '@material-ui/core';
 import styled from 'styled-components';
 import moment from 'moment';
+import { History } from 'history';
 
 const Container = styled.div`
   height: calc(100vh - 50px);
@@ -71,7 +72,11 @@ const getChatsQuery = `
   }
 `;
 
-const ChatsList: React.FC = () => {
+interface ChatListProps {
+  history: History;
+}
+
+const ChatsList: React.FC<ChatListProps> = ({ history }) => {
   const [chats, setChats] = useState<any[]>([]);
 
   useMemo(async () => {
@@ -82,16 +87,30 @@ const ChatsList: React.FC = () => {
       },
       body: JSON.stringify({ query: getChatsQuery }),
     });
-    const { data: { chats } } = await body.json();
+    const {
+      data: { chats },
+    } = await body.json();
     setChats(chats);
   }, []);
+
+  const navigateToChat = useCallback(
+    chat => {
+      history.push(`/chats/${chat.id}`);
+    },
+    [history]
+  );
 
   return (
     <div>
       <Container>
         <StyledList>
           {chats.map(chat => (
-            <StyledListItem key={chat.id} button>
+            <StyledListItem
+              key={chat.id}
+              button
+              data-testid="chat"
+              onClick={navigateToChat.bind(null, chat)}
+            >
               <ChatPicture
                 data-testid="picture"
                 src={chat.picture}
@@ -99,12 +118,16 @@ const ChatsList: React.FC = () => {
               />
               <ChatInfo>
                 <ChatName data-testid="name">{chat.name}</ChatName>
-                {chat.lastMessage &&
+                {chat.lastMessage && (
                   <>
-                    <MessageContent data-testid="content">{chat.lastMessage.content}</MessageContent>
-                    <MessageDate data-testid="date">{moment(chat.lastMessage.createdAt).format('HH:mm')}</MessageDate>
+                    <MessageContent data-testid="content">
+                      {chat.lastMessage.content}
+                    </MessageContent>
+                    <MessageDate data-testid="date">
+                      {moment(chat.lastMessage.createdAt).format('HH:mm')}
+                    </MessageDate>
                   </>
-                }
+                )}
               </ChatInfo>
             </StyledListItem>
           ))}
