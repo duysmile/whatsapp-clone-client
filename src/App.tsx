@@ -13,6 +13,8 @@ import AnimatedSwitch from './components/AnimatedSwitch';
 const App: React.FC = () => (
   <BrowserRouter>
     <AnimatedSwitch>
+      <Route exact path="/chats" component={ChatsListScreen} />
+
       <Route
         exact
         path="/chats/:chatId"
@@ -23,7 +25,6 @@ const App: React.FC = () => (
           <ChatRoomScreen chatId={match.params.chatId} history={history} />
         )}
       />
-      <Route exact path="/chats" component={ChatsListScreen} />
     </AnimatedSwitch>
     <Route exact path="/" render={redirectToChats} />
   </BrowserRouter>

@@ -1,5 +1,7 @@
 import React from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import gql from 'graphql-tag';
+import { useCallback } from 'react';
+import { useApolloClient, useQuery } from '@apollo/react-hooks';
 import styled from 'styled-components';
 import { History } from 'history';
 
@@ -8,13 +10,13 @@ import MessageInput from './MessageInput';
 import MessageList from './MessageList';
 
 const Container = styled.div`
-  background-image: url(/asset/chat-background.jpg);
+  background-image: url(/assets/chat-background.jpg);
   display: flex;
   flex-direction: column;
   height: 100vh;
 `;
 
-const getChatQuery = `
+const getChatQuery = gql`
   query GetChat($chatId: ID!) {
     chat(chatId: $chatId) {
       id
@@ -53,25 +55,12 @@ const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
   chatId,
   history,
 }) => {
-  const [chat, setChat] = useState<OptionalChatQueryResult>(null);
-
-  useMemo(async () => {
-    const body = await fetch(`${process.env.REACT_APP_SERVER_URL}/graphql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: getChatQuery,
-        variables: { chatId },
-      }),
-    });
-
-    const {
-      data: { chat },
-    } = await body.json();
-    setChat(chat);
-  }, [chatId]);
+  const client = useApolloClient();
+  const {
+    data: { chat },
+  } = useQuery<any>(getChatQuery, {
+    variables: { chatId },
+  });
 
   const onSendMessage = useCallback(
     (content: string) => {
@@ -81,14 +70,21 @@ const ChatRoomScreen: React.FC<ChatRoomScreenParams> = ({
         id: (chat.messages.length + 10).toString(),
         createdAt: new Date(),
         content,
+        __typename: 'Chat',
       };
 
-      setChat({
-        ...chat,
-        messages: chat.messages.concat(message),
+      client.writeQuery({
+        query: getChatQuery,
+        variables: { chatId },
+        data: {
+          chat: {
+            ...chat,
+            messages: chat.messages.concat(message),
+          },
+        },
       });
     },
-    [chat]
+    [chat, chatId, client]
   );
 
   if (!chat) {

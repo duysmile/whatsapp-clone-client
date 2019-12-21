@@ -31,7 +31,7 @@ const MessageItem = styled.div`
   }
 
   $::before {
-    background-image: url(/asset/message-mine.png);
+    background-image: url(/assets/message-mine.png);
     content: '';
     position: absolute;
     bottom: 3px;

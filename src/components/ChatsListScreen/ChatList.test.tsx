@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { ApolloProvider } from '@apollo/react-hooks';
 import {
   cleanup,
   render,
@@ -8,7 +9,8 @@ import {
   wait,
 } from '@testing-library/react';
 import { createBrowserHistory } from 'history';
-import ChatList from './ChatsList';
+import { mockApolloClient } from '../../test-helper';
+import ChatList, { getChatsQuery } from './ChatsList';
 
 describe('ChatList', () => {
   afterEach(() => {
@@ -21,27 +23,38 @@ describe('ChatList', () => {
   });
 
   it('render fetched chats data', async () => {
-    fetchMock.mockResponseOnce(
-      JSON.stringify({
-        data: {
-          chats: [
-            {
-              id: 1,
-              name: 'Foo Bar',
-              picture: 'https://localhost:4000/picture.jpg',
-              lastMessage: {
+    const client = mockApolloClient([
+      {
+        request: { query: getChatsQuery },
+        result: {
+          data: {
+            chats: [
+              {
+                __typename: 'Chat',
                 id: 1,
-                content: 'Hello',
-                createdAt: new Date('1 Jan 2019 GMT'),
+                name: 'Foo Bar',
+                picture: 'https://localhost:4000/picture.jpg',
+                lastMessage: {
+                  __typename: 'Message',
+                  id: 1,
+                  content: 'Hello',
+                  createdAt: new Date('1 Jan 2019 GMT'),
+                },
               },
-            },
-          ],
+            ],
+          },
         },
-      })
-    );
+      }
+    ]);
+
+    const history = createBrowserHistory();
 
     {
-      const { container, getByTestId } = render(<ChatList />);
+      const { container, getByTestId } = render(
+        <ApolloProvider client={client}>
+          <ChatList history={history} />
+        </ApolloProvider>
+      );
       await waitForDomChange({ container });
 
       expect(getByTestId('name')).toHaveTextContent('Foo Bar');
@@ -55,29 +68,38 @@ describe('ChatList', () => {
   });
 
   it('should navigate to the target chat room on chat item click', async () => {
-    fetchMock.mockResponseOnce(
-      JSON.stringify({
-        data: {
-          chats: [
-            {
-              id: 1,
-              name: 'Foo Bar',
-              picture: 'https://localhost:4000/picture.jpg',
-              lastMessage: {
-                id: 1,
-                content: 'Hello',
-                createdAt: new Date('1 Jan 2019 GMT'),
-              },
-            },
-          ],
+    const client = mockApolloClient([
+      {
+        request: {
+          query: getChatsQuery,
         },
-      })
-    );
+        result: {
+          data: {
+            chats: [
+              {
+                id: 1,
+                name: 'Foo Bar',
+                picture: 'https://localhost:4000/picture.jpg',
+                lastMessage: {
+                  id: 1,
+                  content: 'Hello',
+                  createdAt: new Date('1 Jan 2019 GMT'),
+                },
+              },
+            ],
+          }
+        }
+      }
+    ]);
 
     const history = createBrowserHistory();
 
     {
-      const { container, getByTestId } = render(<ChatList history={history} />);
+      const { container, getByTestId } = render(
+        <ApolloProvider client={client}>
+          <ChatList history={history} />
+        </ApolloProvider>
+      );
 
       await waitForDomChange({ container });
 
