@@ -10,7 +10,8 @@ import {
 } from '@testing-library/react';
 import { createBrowserHistory } from 'history';
 import { mockApolloClient } from '../../test-helper';
-import ChatList, { getChatsQuery } from './ChatsList';
+import ChatList from './ChatsList';
+import * as queries from '../../graphql/queries';
 
 describe('ChatList', () => {
   afterEach(() => {
@@ -25,7 +26,7 @@ describe('ChatList', () => {
   it('render fetched chats data', async () => {
     const client = mockApolloClient([
       {
-        request: { query: getChatsQuery },
+        request: { query: queries.chats },
         result: {
           data: {
             chats: [
@@ -71,7 +72,7 @@ describe('ChatList', () => {
     const client = mockApolloClient([
       {
         request: {
-          query: getChatsQuery,
+          query: queries.chats,
         },
         result: {
           data: {
